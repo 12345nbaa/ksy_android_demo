@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">P2pDemo</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="btnTextServer">server</string>
+    <string name="btnTextclient">client</string> <!-- P2P start client -->
+    <string name="display_message">display</string>
+    <string name="btnSend">发送</string>
+    <string name="connect_succeed">连接成功</string>
+
+</resources>
