@@ -9,5 +9,13 @@
     <string name="display_message">display</string>
     <string name="btnSend">发送</string>
     <string name="connect_succeed">连接成功</string>
+    <string name="init_failed">底层库初始化失败</string>
+    <string name="read_failed">读取数据失败</string>
+    <string name="read_blocked">读取数据阻塞</string>
+    <string name="read_unexpected">读取数据未捕获异常</string>
+    <string name="write_failed">写数据失败</string>
+    <string name="write_blocked">写数据阻塞</string>
+    <string name="write_unexpected">写数据未捕获异常</string>
+    <string name="session_check_failed">检查会话失败</string>
 
 </resources>

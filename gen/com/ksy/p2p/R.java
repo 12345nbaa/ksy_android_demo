@@ -80,6 +80,14 @@ public final class R {
          */
         public static final int display_message=0x7f060005;
         public static final int hello_world=0x7f060001;
+        public static final int init_failed=0x7f060008;
+        public static final int read_blocked=0x7f06000a;
+        public static final int read_failed=0x7f060009;
+        public static final int read_unexpected=0x7f06000b;
+        public static final int session_check_failed=0x7f06000f;
+        public static final int write_blocked=0x7f06000d;
+        public static final int write_failed=0x7f06000c;
+        public static final int write_unexpected=0x7f06000e;
     }
     public static final class style {
         /** 
