@@ -156,8 +156,7 @@ public class MainActivity extends Activity implements OnClickListener {
 												clientUID,
 												"expire=1710333230&public=1&nonce=12341234&accesskey=2HITWMQXL2VBB3XMAEHQ&signature=1wgD2F56CDUizTp0%2fj3DJ%2fasSsY%3d",
 												TIME_OUT, 2);
-								Log.d(TAG, "clientRunnable clientsid ="
-										+ clientsid);
+//								Log.d(TAG, "clientRunnable clientsid =" + clientsid);
 
 							} catch (Exception e) {
 								Log.e(TAG, "clientRunnable 222 e =" + e);
@@ -190,19 +189,20 @@ public class MainActivity extends Activity implements OnClickListener {
 						byteClient = new byte[1024 * 2];
 
 						int size = clientApi.KSY_Client_Session_Read(clientsid,
-								byteClient, 1024 * 2, 5000, 0);
+								byteClient, 1024 * 2, 300, 0);
 
-						 Log.d(TAG, "clientRunnable 11 size=" + size);
+//						 Log.d(TAG, "clientRunnable 11 size=" + size);
 
 						if (size > 0) {
-							Log.d(TAG, "clientRunnable 22 size=" + size);
+
 							clientData = new String(byteClient, 0, size, "UTF-8");
-							if (clientData != null) {
+							
+							/*if (clientData != null) {
 								String client1 = StrToBinstr(clientData);
-								Log.d("hh", "clientRunnable read client1= " + client1);
-								Log.d("hh", "clientRunnable read clientData="
-										+ clientData);
-							}
+								Log.d(TAG, "clientRunnable read client1= " + client1);
+								Log.d(TAG, "clientRunnable read clientData="
+										+ clientData +":::::=" + clientData.length());
+							}*/
 
 							Message message = Message.obtain();
 							message.what = CLIENT_SEND;
@@ -217,9 +217,9 @@ public class MainActivity extends Activity implements OnClickListener {
 
 						} else if (size == -2) {
 							// TODO
-//							  Message message = Message.obtain(); 
-//							  message.what = READ_BLOCKED; 
-//							  handler.sendMessage(message);
+						   Message message = Message.obtain(); 
+						   message.what = READ_BLOCKED; 
+						   handler.sendMessage(message);
 
 						} else if (size == -3) {
 							Message message = Message.obtain();
@@ -234,23 +234,24 @@ public class MainActivity extends Activity implements OnClickListener {
 					if (mClientList.size() > 0) {
 						for (int j = 0; j < mClientList.size(); j++) {
 							clientString = mClientList.get(j);
+							/*
 							if (clientString != null) {
 								String client2 = StrToBinstr(clientString);
-								Log.d("hh", "clientRunnable Write client2= " + client2);
+								Log.d(TAG, "clientRunnable Write client2= " + client2);
 
-								Log.d("hh", "clientRunnable Write clientString ="
+								Log.d(TAG, "clientRunnable Write clientString ="
 										+ clientString);
-							}
+							}*/
 
 							if (clientString != null) {
 								try {
-									clientString = new String(clientString.getBytes(),"UTF-8");
+									clientString = new String(clientString.getBytes("UTF-8"));
 									
 									int write = clientApi
 											.KSY_Client_Session_Write(
 													clientsid, clientString,
-													clientString.length(), 0);
-                                    Log.e("hh", "clientRunnable  write =" + write);
+													clientString.getBytes().length, 0);
+//                                    Log.e(TAG, "clientRunnable  write =" + write + ">>clientString=" + clientString + "<>><=" + clientString.getBytes().length);
 									if (write == -1) {
 										Message message = Message.obtain();
 										message.what = WRITE_FAILED;
@@ -363,19 +364,19 @@ public class MainActivity extends Activity implements OnClickListener {
 						byteServer = new byte[1024 * 2];
 
 						int sizee = serverApi.KSY_Device_Session_Read(
-								serverSid, byteServer, 1024 * 2, 5000, 0);
-						 Log.d(TAG, "serverRunnable 11 sizee ===" + sizee);
+								serverSid, byteServer, 1024 * 2, 300, 0);
+//						 Log.d(TAG, "serverRunnable 11 sizee ===" + sizee);
 
 						if (sizee > 0) {
-							Log.d(TAG, "serverRunnable 22 sizee ===" + sizee);
-							serverData = new String(byteServer, 0, sizee, "UTF-8"); // GBK 
-							if (serverData != null) {
+							serverData = new String(byteServer, 0, sizee, "UTF-8");
+							
+							/*if (serverData != null) {
 								String server1 = StrToBinstr(serverData);
-								Log.d("hh", "serverRunnable read server1= " + server1);
+								Log.d(TAG, "serverRunnable read server1= " + server1);
 
-								Log.d("hh", "serverRunnable read serverData="
-										+ serverData);
-							}
+								Log.d(TAG, "serverRunnable read serverData="
+										+ serverData + "<<>>?=" + serverData.length());
+							}*/
 
 							Message message = Message.obtain();
 							message.what = SERVER_SEND;
@@ -389,10 +390,9 @@ public class MainActivity extends Activity implements OnClickListener {
 							handler.sendMessage(message);
 
 						} else if (sizee == -2) {
-							/*
-							 * Message message = Message.obtain(); message.what
-							 * = READ_BLOCKED; handler.sendMessage(message);
-							 */
+							 Message message = Message.obtain(); 
+							 message.what= READ_BLOCKED;
+							 handler.sendMessage(message);
 
 						} else if (sizee == -3) {
 							Message message = Message.obtain();
@@ -409,23 +409,23 @@ public class MainActivity extends Activity implements OnClickListener {
 
 						for (int i = 0; i < mServerList.size(); i++) {
 							serverString = mServerList.get(i);
-							if (serverString != null) {
+							/*if (serverString != null) {
 								String server2 = StrToBinstr(serverString);
-								Log.d("hh", "serverRunnable read server2= " + server2);
+								Log.d(TAG, "serverRunnable read server2= " + server2);
 
-								Log.d("hh", "serverRunnable  serverString ="
-										+ serverString);
-							}
+								Log.d(TAG, "serverRunnable 11 serverString ="
+										+ serverString +"{{{}=" + serverString.length());
+							}*/
 
 							if (serverString != null) {
 								try {
-									serverString = new String(serverString.getBytes(),"UTF-8");
+									serverString = new String(serverString.getBytes("UTF-8"));
 									
 									int serverWrite = serverApi
 											.KSY_Device_Session_Write(
 													serverSid, serverString,
-													serverString.length(), 0);
-									Log.e("hh", "serverRunnable  serverWrite =" + serverWrite);
+													serverString.getBytes().length, 0);
+//									Log.e(TAG, "serverRunnable 22 serverWrite =" + serverWrite + ">>serverString=" + serverString + "<>>" + serverString.getBytes().length);
 									if (serverWrite == -1) {
 										Message message = Message.obtain();
 										message.what = WRITE_FAILED;
