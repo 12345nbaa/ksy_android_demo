@@ -9,6 +9,8 @@
     <string name="display_message">display</string>
     <string name="btnSend">发送</string>
     <string name="connect_succeed">连接成功</string>
+    <string name="connect_failed">连接失败</string>
+    <string name="connect_timeout">连接超时</string>
     <string name="init_failed">底层库初始化失败</string>
     <string name="read_failed">读取数据失败</string>
     <string name="read_blocked">读取数据阻塞</string>

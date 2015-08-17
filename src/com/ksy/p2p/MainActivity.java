@@ -52,7 +52,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	private int client = 0;
 	private int client_int = 0;
-	
+
 	private static final String HOST_IP = "115.231.96.88";
 
 	private static final int TIME_OUT = 5;
@@ -60,14 +60,17 @@ public class MainActivity extends Activity implements OnClickListener {
 	private static final int CLIENT_SEND = 12;
 	private static final int SERVER_SEND = 13;
 	private static final int INIT_ERROR = 14;
-	private static final int READ_FAILED= 15;
-	private static final int READ_BLOCKED= 16;
-	private static final int READ_UNEXCEPTED= 17;
-	private static final int WRITE_FAILED= 18;
-	private static final int WRITE_BLOCKED= 19;
-	private static final int WRITE_UNEXCEPTED= 20;
-	private static final int SESSION_CHECK= 21;
+	private static final int READ_FAILED = 15;
+	private static final int READ_BLOCKED = 16;
+	private static final int READ_UNEXCEPTED = 17;
+	private static final int WRITE_FAILED = 18;
+	private static final int WRITE_BLOCKED = 19;
+	private static final int WRITE_UNEXCEPTED = 20;
+	private static final int SESSION_CHECK = 21;
 	
+	private static final int CONNECT_FAILED = 22;
+	private static final int CONNECT_TIMEOUT = 23;
+
 	private List<String> mServerList = new LinkedList<String>();
 	private List<String> mClientList = new LinkedList<String>();
 	String contentUtf = null;
@@ -79,17 +82,17 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	private Handler mHandler;
 	private HandlerThread mHandlerThread;
-	
+
 	private boolean mClientRunning;
 	private boolean mServerRunning;
-	
+
 	private Spinner serverSpinner;
 	private Spinner clientSpinner;
 	private ArrayAdapter serverAdapter;
 	private ArrayAdapter clientAdapter;
 	private String serverUID = null;
 	private String clientUID = null;
-	
+
 	byte[] byteServer;
 	byte[] byteClient;
 
@@ -105,19 +108,19 @@ public class MainActivity extends Activity implements OnClickListener {
 		initView();
 
 		initHandler();
-        
+
 	}
 
 	/**
-	 * init 
+	 * init
 	 */
 	private void initHandler() {
 		mHandlerThread = new HandlerThread("p2p", 5);
-        mHandlerThread.start();
-        
-        mHandler = new Handler(mHandlerThread.getLooper());
+		mHandlerThread.start();
+
+		mHandler = new Handler(mHandlerThread.getLooper());
 	}
-	
+
 	/**
 	 * client thread
 	 */
@@ -125,142 +128,160 @@ public class MainActivity extends Activity implements OnClickListener {
 		@Override
 		public void run() {
 			while (mClientRunning) {
-				
+
 				if (client == 1) {// 点击client按钮后
 
 					if (client_int == 0) {// 初始化只走一次
 						client_int = 1;
 
 						try {
-							int clientinit = clientApi.KSY_Client_Initialize(HOST_IP, "");
-							
-                            if (clientinit < 0) {
+							int clientinit = clientApi.KSY_Client_Initialize(
+									HOST_IP, "");
+
+							if (clientinit < 0) {
 								Message message = Message.obtain();
 								message.what = INIT_ERROR;
 								handler.sendMessage(message);
 							}
-                            
+
 						} catch (Exception e) {
 							Log.e(TAG, "clientRunnable 111 e =" + e);
 						}
-						
-						// "000001111222233334444555566667777@xiaoyi"
+
 						if (clientUID != null) {
-							
+
 							try {
 								clientsid = clientApi
 										.KSY_Client_Connect(
 												clientUID,
 												"expire=1710333230&public=1&nonce=12341234&accesskey=2HITWMQXL2VBB3XMAEHQ&signature=1wgD2F56CDUizTp0%2fj3DJ%2fasSsY%3d",
 												TIME_OUT, 2);
-								Log.d(TAG, "clientRunnable clientsid =" + clientsid);
-								
+								Log.d(TAG, "clientRunnable clientsid ="
+										+ clientsid);
+
 							} catch (Exception e) {
 								Log.e(TAG, "clientRunnable 222 e =" + e);
 							}
-							
+
 						} else {
 							Log.e(TAG, "clientRunnable clientUID = null");
 						}
-						
+
 						try {
 							int session_type = clientApi
 									.KSY_Client_Session_Type_Check(clientsid);
-							Log.d(TAG, "clientRunnable session_type =" + session_type);
-							
+							Log.d(TAG, "clientRunnable session_type ="
+									+ session_type);
+
 							if (session_type < 0) {
-								
+
 								Message message = Message.obtain();
 								message.what = SESSION_CHECK;
 								handler.sendMessage(message);
 							}
-							
+
 						} catch (Exception e) {
 							Log.e(TAG, "clientRunnable 444 e =" + e);
-						} 
+						}
 					}
 
 					try {
-						
+
 						byteClient = new byte[1024 * 2];
-						
+
 						int size = clientApi.KSY_Client_Session_Read(clientsid,
-								byteClient, 1024 * 2, TIME_OUT, 0);
-						
-//						Log.d(TAG, "clientRunnable size=" + size);
-						
+								byteClient, 1024 * 2, 5000, 0);
+
+						 Log.d(TAG, "clientRunnable 11 size=" + size);
+
 						if (size > 0) {
-							clientData = new String(byteClient, 0, size/*, "GBK"*/);
-							Log.d(TAG, "clientRunnable clientData=" + clientData);
-//							String s2 = new String(s1.getBytes(“ISO-8859-1”),”GBK”);
+							Log.d(TAG, "clientRunnable 22 size=" + size);
+							clientData = new String(byteClient, 0, size, "UTF-8");
+							if (clientData != null) {
+								String client1 = StrToBinstr(clientData);
+								Log.d("hh", "clientRunnable read client1= " + client1);
+								Log.d("hh", "clientRunnable read clientData="
+										+ clientData);
+							}
 
 							Message message = Message.obtain();
 							message.what = CLIENT_SEND;
 							handler.sendMessage(message);
 
 							byteClient = null;
-							
-						} else if(size == -1) {
+
+						} else if (size == -1) {
 							Message message = Message.obtain();
 							message.what = READ_FAILED;
 							handler.sendMessage(message);
-							
+
 						} else if (size == -2) {
-							//TODO
-							/*Message message = Message.obtain();
-							message.what = READ_BLOCKED;
-							handler.sendMessage(message);*/
-							
+							// TODO
+//							  Message message = Message.obtain(); 
+//							  message.what = READ_BLOCKED; 
+//							  handler.sendMessage(message);
+
 						} else if (size == -3) {
 							Message message = Message.obtain();
 							message.what = READ_UNEXCEPTED;
 							handler.sendMessage(message);
 						}
-						
+
 					} catch (Exception e) {
 						Log.e(TAG, "clientRunnable 555 e =" + e);
 					}
-					
+
 					if (mClientList.size() > 0) {
 						for (int j = 0; j < mClientList.size(); j++) {
 							clientString = mClientList.get(j);
-							Log.e(TAG, "clientRunnable clientString =" + clientString);
-							
+							if (clientString != null) {
+								String client2 = StrToBinstr(clientString);
+								Log.d("hh", "clientRunnable Write client2= " + client2);
+
+								Log.d("hh", "clientRunnable Write clientString ="
+										+ clientString);
+							}
+
 							if (clientString != null) {
 								try {
-									int write = clientApi.KSY_Client_Session_Write(clientsid,
-											clientString, clientString.length(), 0);
+									clientString = new String(clientString.getBytes(),"UTF-8");
 									
-									if(write == -1) {
+									int write = clientApi
+											.KSY_Client_Session_Write(
+													clientsid, clientString,
+													clientString.length(), 0);
+                                    Log.e("hh", "clientRunnable  write =" + write);
+									if (write == -1) {
 										Message message = Message.obtain();
 										message.what = WRITE_FAILED;
 										handler.sendMessage(message);
-										
+
 									} else if (write == -2) {
 										Message message = Message.obtain();
 										message.what = WRITE_BLOCKED;
 										handler.sendMessage(message);
-										
+
 									} else if (write == -3) {
 										Message message = Message.obtain();
 										message.what = WRITE_UNEXCEPTED;
 										handler.sendMessage(message);
 									}
-									
+
 								} catch (Exception e) {
 									Log.e(TAG, "clientRunnable 666 e =" + e);
 								}
-								
+
 							} else {
-								Log.e(TAG, "clientRunnable  clientString = null ");
+								Log.e(TAG,
+										"clientRunnable  clientString = null ");
 							}
-							
+
 							clientString = null;
 						}
 					}
-					
-					mClientList.clear(); //清空list
-					
+
+					mClientList.clear(); // 清空list
+
 				} else {
 					// 没有点击前初始
 					Log.d(TAG, "........clientRunnable  client =" + client);
@@ -275,134 +296,166 @@ public class MainActivity extends Activity implements OnClickListener {
 	Runnable serverRunnable = new Runnable() {
 		@Override
 		public void run() {
-			
+
 			while (mServerRunning) {
-				
+
 				if (server == 1) { // 点击server后
 					if (server_int == 0) {// 初始化只走一次
 						server_int = 1;
-						
+
 						try {
-							int init = serverApi.KSY_Device_Initialize(HOST_IP, "");
-							
+							int init = serverApi.KSY_Device_Initialize(HOST_IP,
+									"");
+
 							if (init < 0) {
 								Message message = Message.obtain();
 								message.what = INIT_ERROR;
 								handler.sendMessage(message);
 							}
-							
-							Log.d(TAG, "serverRunnable serverUID =" + serverUID + ">>>init ===" + init);
-							
+
+							Log.d(TAG, "serverRunnable serverUID =" + serverUID
+									+ ">>>init ===" + init);
+
 						} catch (Exception e) {
 							Log.e(TAG, "serverRunnable 111111 e =" + e);
 						}
-						
-						//"000001111222233334444555566667777@xiaoyi"
+
+						// "000001111222233334444555566667777@xiaoyi"
 						if (serverUID != null) {
 							try {
-								serverSid = serverApi   
-										.KSY_Device_Listen(serverUID,
+								serverSid = serverApi
+										.KSY_Device_Listen(
+												serverUID,
 												"expire=1710333230&public=1&nonce=12341234&accesskey=2HITWMQXL2VBB3XMAEHQ&signature=1wgD2F56CDUizTp0%2fj3DJ%2fasSsY%3d",
 												TIME_OUT, 0, 2);
-								Log.d(TAG, "serverRunnable  serverSid =" + serverSid);
-								
-								//TODO
-								Message message = Message.obtain();
-								message.what = CONNECT_SUCCEED;
-								handler.sendMessage(message);
-								
-								/*if (serverSid != 0) {
+								Log.d(TAG, "serverRunnable  serverSid ="
+										+ serverSid);
+
+								// TODO
+								if(serverSid >= 0) {
+									Message message = Message.obtain();
+									message.what = CONNECT_SUCCEED;
+									handler.sendMessage(message);
 									
-								}*/
-								
+								} else if(serverSid == -1) {
+									Message message = Message.obtain();
+									message.what = CONNECT_FAILED;
+									handler.sendMessage(message);
+									
+								} else if (serverSid == -2) {
+									Message message = Message.obtain();
+									message.what = CONNECT_TIMEOUT;
+									handler.sendMessage(message);
+									
+								}
+
 							} catch (Exception e) {
 								Log.e(TAG, "serverRunnable 222222 e =" + e);
 							}
-							
+
 						} else {
 							Log.e(TAG, "serverRunnable  serverUID = null");
 						}
-					} 
-					
+					}
+
 					try {
-						
+
 						byteServer = new byte[1024 * 2];
-						
-						int sizee = serverApi.KSY_Device_Session_Read(serverSid,
-								byteServer, 1024 * 2, TIME_OUT, 0);
-//						Log.d(TAG, "serverRunnable sizee ===" + sizee); 
-						
+
+						int sizee = serverApi.KSY_Device_Session_Read(
+								serverSid, byteServer, 1024 * 2, 5000, 0);
+						 Log.d(TAG, "serverRunnable 11 sizee ===" + sizee);
+
 						if (sizee > 0) {
-							serverData = new String(byteServer, 0, sizee/*, "GBK"*/); //GBK
-							Log.d(TAG, "serverRunnable serverData=" + serverData);
-							
+							Log.d(TAG, "serverRunnable 22 sizee ===" + sizee);
+							serverData = new String(byteServer, 0, sizee, "UTF-8"); // GBK 
+							if (serverData != null) {
+								String server1 = StrToBinstr(serverData);
+								Log.d("hh", "serverRunnable read server1= " + server1);
+
+								Log.d("hh", "serverRunnable read serverData="
+										+ serverData);
+							}
+
 							Message message = Message.obtain();
 							message.what = SERVER_SEND;
 							handler.sendMessage(message);
-							
+
 							byteServer = null;
-							
-						} else if(sizee == -1) {
+
+						} else if (sizee == -1) {
 							Message message = Message.obtain();
 							message.what = READ_FAILED;
 							handler.sendMessage(message);
-							
+
 						} else if (sizee == -2) {
-							/*Message message = Message.obtain();
-							message.what = READ_BLOCKED;
-							handler.sendMessage(message);*/
-							
+							/*
+							 * Message message = Message.obtain(); message.what
+							 * = READ_BLOCKED; handler.sendMessage(message);
+							 */
+
 						} else if (sizee == -3) {
 							Message message = Message.obtain();
 							message.what = READ_UNEXCEPTED;
 							handler.sendMessage(message);
 						}
-						
+
 					} catch (Exception e) {
 						Log.e(TAG, "serverRunnable 44444 e =" + e);
 					}
-					
-					//Log.d(TAG, "serverRunnable mServerList.size() =" + mServerList.size());
+
+					// Log.d(TAG, "serverRunnable mServerList.size() =" + mServerList.size());
 					if (mServerList.size() > 0) {
 
 						for (int i = 0; i < mServerList.size(); i++) {
 							serverString = mServerList.get(i);
-							Log.e(TAG, "serverRunnable  serverString =" + serverString);
-							
+							if (serverString != null) {
+								String server2 = StrToBinstr(serverString);
+								Log.d("hh", "serverRunnable read server2= " + server2);
+
+								Log.d("hh", "serverRunnable  serverString ="
+										+ serverString);
+							}
+
 							if (serverString != null) {
 								try {
-									int serverWrite = serverApi.KSY_Device_Session_Write(serverSid,
-											serverString, serverString.length(), 0);
+									serverString = new String(serverString.getBytes(),"UTF-8");
 									
-									if(serverWrite == -1) {
+									int serverWrite = serverApi
+											.KSY_Device_Session_Write(
+													serverSid, serverString,
+													serverString.length(), 0);
+									Log.e("hh", "serverRunnable  serverWrite =" + serverWrite);
+									if (serverWrite == -1) {
 										Message message = Message.obtain();
 										message.what = WRITE_FAILED;
 										handler.sendMessage(message);
-										
+
 									} else if (serverWrite == -2) {
 										Message message = Message.obtain();
 										message.what = WRITE_BLOCKED;
 										handler.sendMessage(message);
-										
+
 									} else if (serverWrite == -3) {
 										Message message = Message.obtain();
 										message.what = WRITE_UNEXCEPTED;
 										handler.sendMessage(message);
 									}
-									
+
 								} catch (Exception e) {
 									Log.e(TAG, "serverRunnable 555555 e =" + e);
 								}
 							} else {
-								Log.e(TAG, "serverRunnable  serverString = null");
+								Log.e(TAG,
+										"serverRunnable  serverString = null");
 							}
-							
+
 							serverString = null;
 						}
 					}
-					
+
 					mServerList.clear();
-					
+
 				} else {
 					Log.d(TAG, "serverRunnable  server = " + server);
 				}
@@ -410,7 +463,6 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 	};
 
-	
 	/**
 	 * message handle
 	 */
@@ -420,14 +472,14 @@ public class MainActivity extends Activity implements OnClickListener {
 			case CLIENT_SEND:
 				// 实体数据添加
 				KsyMsgEntity entity = new KsyMsgEntity();
-				entity.setName("device"); //client
+				entity.setName("device"); // client
 				entity.setDate(getDate());
 				entity.setMessage(clientData);
 				entity.setMsgType(false);
 
 				mDataArrays.add(entity);
-				
-				mAdapter.notifyDataSetChanged();//通知ListView，数据已发生改变
+
+				mAdapter.notifyDataSetChanged();// 通知ListView，数据已发生改变
 				mListView.setSelection(mListView.getCount() - 1);// 发送一条消息时，ListView显示选择最后一项
 
 				break;
@@ -435,53 +487,70 @@ public class MainActivity extends Activity implements OnClickListener {
 			case SERVER_SEND:
 				// 实体数据添加
 				KsyMsgEntity entityServer = new KsyMsgEntity();
-				entityServer.setName("client"); //server
+				entityServer.setName("client"); // server
 				entityServer.setDate(getDate());
 				entityServer.setMessage(serverData);
 				entityServer.setMsgType(false);
 
 				mDataArrays.add(entityServer);
-				
-				mAdapter.notifyDataSetChanged();//通知ListView，数据已发生改变
+
+				mAdapter.notifyDataSetChanged();// 通知ListView，数据已发生改变
 				mListView.setSelection(mListView.getCount() - 1);// 发送一条消息时，ListView显示选择最后一项
 
 				break;
-				
+
 			case CONNECT_SUCCEED:
-				Toast.makeText(MainActivity.this, R.string.connect_succeed, Toast.LENGTH_SHORT).show();
+				Toast.makeText(MainActivity.this, R.string.connect_succeed,
+						Toast.LENGTH_SHORT).show();
 				break;
-			
+			case CONNECT_FAILED:
+				Toast.makeText(MainActivity.this, R.string.connect_failed,
+						Toast.LENGTH_SHORT).show();
+				break;
+			case CONNECT_TIMEOUT:
+				Toast.makeText(MainActivity.this, R.string.connect_timeout,
+						Toast.LENGTH_SHORT).show();
+				break;
+				
 			case SESSION_CHECK:
-				Toast.makeText(MainActivity.this, R.string.session_check_failed, Toast.LENGTH_SHORT).show();
+				Toast.makeText(MainActivity.this,
+						R.string.session_check_failed, Toast.LENGTH_SHORT)
+						.show();
 				break;
-				
+
 			case READ_FAILED:
-				Toast.makeText(MainActivity.this, R.string.read_failed, Toast.LENGTH_SHORT).show();
+				Toast.makeText(MainActivity.this, R.string.read_failed,
+						Toast.LENGTH_SHORT).show();
 				break;
-				
+
 			case READ_BLOCKED:
-				Toast.makeText(MainActivity.this, R.string.read_blocked, Toast.LENGTH_SHORT).show();
+				Toast.makeText(MainActivity.this, R.string.read_blocked,
+						Toast.LENGTH_SHORT).show();
 				break;
-				
+
 			case READ_UNEXCEPTED:
-				Toast.makeText(MainActivity.this, R.string.read_unexpected, Toast.LENGTH_SHORT).show();
+				Toast.makeText(MainActivity.this, R.string.read_unexpected,
+						Toast.LENGTH_SHORT).show();
 				break;
-				
+
 			case WRITE_FAILED:
-				Toast.makeText(MainActivity.this, R.string.write_failed, Toast.LENGTH_SHORT).show();
+				Toast.makeText(MainActivity.this, R.string.write_failed,
+						Toast.LENGTH_SHORT).show();
 				break;
-				
+
 			case WRITE_BLOCKED:
-				Toast.makeText(MainActivity.this, R.string.write_blocked, Toast.LENGTH_SHORT).show();
+				Toast.makeText(MainActivity.this, R.string.write_blocked,
+						Toast.LENGTH_SHORT).show();
 				break;
-				
+
 			case WRITE_UNEXCEPTED:
-				Toast.makeText(MainActivity.this, R.string.write_unexpected, Toast.LENGTH_SHORT).show();
+				Toast.makeText(MainActivity.this, R.string.write_unexpected,
+						Toast.LENGTH_SHORT).show();
 				break;
 			}
 		}
 	};
-	
+
 	/**
 	 * init view
 	 */
@@ -500,8 +569,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		mAdapter = new KsyMsgAdapter(this, mDataArrays);
 		mListView.setAdapter(mAdapter);
-		
-		//下拉框
+
+		// 下拉框
 		serverSpinner = (Spinner) findViewById(R.id.spinner_server);
 		clientSpinner = (Spinner) findViewById(R.id.spinner_client);
 
@@ -525,34 +594,36 @@ public class MainActivity extends Activity implements OnClickListener {
 			@Override
 			public void onItemSelected(AdapterView<?> arg0, View v,
 					int position, long arg3) {
-				Log.d(TAG, "serverAdapter.getItem(position)=" + position + ">>>" + serverAdapter.getItem(position));
+				Log.d(TAG, "serverAdapter.getItem(position)=" + position
+						+ ">>>" + serverAdapter.getItem(position));
 				serverUID = (String) serverAdapter.getItem(position);
 			}
 
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {
 				// TODO Auto-generated method stub
-				
+
 			}
 		});
-		
+
 		clientSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> arg0, View v,
 					int position, long arg3) {
-				Log.d(TAG, "clientAdapter.getItem(position)=" + position + ">>>" + clientAdapter.getItem(position));
+				Log.d(TAG, "clientAdapter.getItem(position)=" + position
+						+ ">>>" + clientAdapter.getItem(position));
 				clientUID = (String) clientAdapter.getItem(position);
 			}
 
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {
 				// TODO Auto-generated method stub
-				
+
 			}
 		});
-		
-		serverSpinner.setSelection(0,true);
-		clientSpinner.setSelection(0,true);
+
+		serverSpinner.setSelection(0, true);
+		clientSpinner.setSelection(0, true);
 
 	}
 
@@ -570,7 +641,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
-			
+
 			mEditTextContent.setText("");
 
 			return true;
@@ -579,7 +650,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	}
 
 	/**
-	 * click 
+	 * click
 	 */
 	@Override
 	public void onClick(View v) {
@@ -601,23 +672,21 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 	}
 
-
 	private void serverListener() {
 
 		mHandler.post(serverRunnable);
-		
+
 		server = 1;
-		
+
 		mButtonClient.setClickable(false);
 	}
-
 
 	private void clientListener() {
 
 		mHandler.post(clientRunnable);
-		
+
 		client = 1;
-		
+
 		mButtonServer.setClickable(false);
 	}
 
@@ -626,22 +695,23 @@ public class MainActivity extends Activity implements OnClickListener {
 	 */
 	private void send() {
 
-		String contString = mEditTextContent.getText().toString();
-		Log.d(TAG, "send() contString ==" + contString);
-		
-		try {
+//		String contString = mEditTextContent.getText().toString();
+		contentUtf = mEditTextContent.getText().toString();
+//		Log.d(TAG, "send() contString ==" + contString);
+
+		/*try {
 			contentUtf = toUTF_8(contString);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-
+*/
 		Log.d(TAG, "send() contentUtf.length() ==" + contentUtf.length());
 		if (contentUtf.length() > 0) {
 			Log.d(TAG, "send() server =" + server + ">>client =" + client);
 			if (server == 1) {// 服务端
 
 				mServerList.add(contentUtf); // 添加到服务端队列
-				
+
 				// 实体数据添加
 				KsyMsgEntity entityServer = new KsyMsgEntity();
 				entityServer.setName("device");
@@ -650,7 +720,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				entityServer.setMsgType(false);
 
 				mDataArrays.add(entityServer);
-				
+
 			} else if (client == 1) { // 客户端
 
 				mClientList.add(contentUtf); // 添加到客户端队列
@@ -666,12 +736,12 @@ public class MainActivity extends Activity implements OnClickListener {
 			}
 
 		} else {
-			//TODO
+			// TODO
 		}
 
 		mAdapter.notifyDataSetChanged();// 通知ListView，数据已发生改变
 		mListView.setSelection(mListView.getCount() - 1);// 发送一条消息时，ListView显示选择最后一项
-		
+
 		mEditTextContent.setText("");// 清空编辑框数据
 		contentUtf = null;
 	}
@@ -683,7 +753,6 @@ public class MainActivity extends Activity implements OnClickListener {
 	 */
 	public String toUTF_8(String str) throws UnsupportedEncodingException {
 		return this.changeCharset(str, "UTF_8");
-//		return this.changeCharset(str, "GBK");
 	}
 
 	/**
@@ -700,10 +769,9 @@ public class MainActivity extends Activity implements OnClickListener {
 			throws UnsupportedEncodingException {
 		if (str != null) {
 			// 用默认字符编码解码字符串。
-//			byte[] bs = str.getBytes();
-			
+			byte[] bs = str.getBytes();
 			// 用新的字符编码生成字符串
-			return new String(str.getBytes("ISO-8859-1"), newCharset);
+			return new String(bs, newCharset);
 		}
 		return null;
 	}
@@ -722,9 +790,9 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onResume() {
 		mClientRunning = true;
 		mServerRunning = true;
-		
+
 		super.onResume();
-		
+
 		Log.d(TAG, "onResume()............");
 	}
 
@@ -732,7 +800,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
-		
+
 		Log.d(TAG, "onStart()............");
 	}
 
@@ -740,7 +808,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		
+
 		Log.d(TAG, "onPause()............");
 	}
 
@@ -748,7 +816,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onStop() {
 		mClientRunning = false;
 		mServerRunning = false;
-		
+
 		super.onStop();
 		Log.d(TAG, "onStop()............");
 	}
@@ -757,20 +825,20 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onDestroy() {
 		mClientRunning = false;
 		mServerRunning = false;
-		
+
 		super.onDestroy();
-		
+
 		if (server == 1) {
 			handler.removeCallbacks(serverRunnable);
 			handler.removeMessages(CONNECT_SUCCEED);
 			handler.removeMessages(SERVER_SEND);
-			
+
 		} else if (client == 1) {
 			handler.removeCallbacks(clientRunnable);
 			handler.removeMessages(CLIENT_SEND);
 			handler.removeMessages(SESSION_CHECK);
 		}
-		
+
 		handler.removeMessages(INIT_ERROR);
 		handler.removeMessages(READ_BLOCKED);
 		handler.removeMessages(READ_FAILED);
@@ -778,34 +846,34 @@ public class MainActivity extends Activity implements OnClickListener {
 		handler.removeMessages(WRITE_BLOCKED);
 		handler.removeMessages(WRITE_FAILED);
 		handler.removeMessages(WRITE_UNEXCEPTED);
-		
+
 		Log.d(TAG, "onDestroy()............");
-		
+
 	}
 
 	/**
-	 * back 
+	 * back
 	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			if (server == 1) {// 服务端
-				
+
 				try {
 					serverApi.KSY_Device_Session_Close(serverSid);
-				} catch (Exception e) { 
+				} catch (Exception e) {
 					Log.e(TAG, "onKeyDown  server e=" + e);
 				}
-				
+
 			} else if (client == 1) { // 客户端
-				
+
 				try {
 					clientApi.KSY_Client_Session_Close(clientsid);
 				} catch (Exception e) {
 					Log.e(TAG, "onKeyDown  client e=" + e);
 				}
 			}
-			
+
 			finish();
 
 			return true;
@@ -817,7 +885,17 @@ public class MainActivity extends Activity implements OnClickListener {
 	private void isDisconnect() {
 
 	}
-
+	
+	//将字符串转换成二进制字符串，以空格相隔
+    private String StrToBinstr(String str) {
+        char[] strChar=str.toCharArray();
+        String result="";
+        for(int i=0;i<strChar.length;i++){
+            result +=Integer.toBinaryString(strChar[i])+ " ";
+        }
+        return result;
+    }
+    
 }
 
 
