@@ -3,18 +3,17 @@
 
     <string-array name="server_list">
         <item>000001111222233334444555566667777@xiaoyi</item>
-        <item>MOTO</item>
-        <item>HTC</item>
-        <item>LG</item>
-        <item>其他</item>
+        <item>022223333444455556666777788889999@xiaoyi</item>
+        <item>066663333444455556666777788889999@xiaoyi</item>
+        <item>122E74DC8DFB0490284DA587854D58688@xiaoyi</item>
     </string-array>
+    
     
     <string-array name="client_list">
         <item>000001111222233334444555566667777@xiaoyi</item>
-        <item>22</item>
-        <item>33</item>
-        <item>44</item>
-        <item>55</item>
+        <item>022223333444455556666777788889999@xiaoyi</item>
+        <item>066663333444455556666777788889999@xiaoyi</item>
+        <item>122E74DC8DFB0490284DA587854D58688@xiaoyi</item>
     </string-array>
 
    

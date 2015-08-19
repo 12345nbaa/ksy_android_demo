@@ -148,6 +148,7 @@ public class MainActivity extends Activity implements OnClickListener {
 							Log.e(TAG, "clientRunnable 111 e =" + e);
 						}
 
+						Log.e(TAG, "clientRunnable   clientUID =" + clientUID);
 						if (clientUID != null) {
 
 							try {
@@ -322,6 +323,7 @@ public class MainActivity extends Activity implements OnClickListener {
 						}
 
 						// "000001111222233334444555566667777@xiaoyi"
+						
 						if (serverUID != null) {
 							try {
 								serverSid = serverApi
@@ -348,6 +350,8 @@ public class MainActivity extends Activity implements OnClickListener {
 									message.what = CONNECT_TIMEOUT;
 									handler.sendMessage(message);
 									
+								} else {
+									//TODO
 								}
 
 							} catch (Exception e) {
